@@ -1,0 +1,20 @@
+{% extends 'main.html' %}
+
+{% block content %}
+
+    <h1>Create Your Profile</h1>
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <!-- Add form fields for profile creation -->
+        <label for="bio">Bio:</label>
+        <textarea name="bio" id="bio"></textarea>
+
+        <label for="profile_pic">Profile Picture:</label>
+        <input type="file" name="profile_pic" id="profile_pic">
+
+        <button type="submit">Create Profile</button>
+    </form>
+
+{% endblock %}

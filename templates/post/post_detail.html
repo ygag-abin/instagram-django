@@ -1,0 +1,21 @@
+{% extends 'main.html' %}
+
+{% block content %}
+
+
+
+    <h1>Post Detail</h1>
+    <p>Posted by: {{ post.user.username }}</p>
+    <p>{{ post.created_at }}</p>
+    <img src="{{ post.image.url }}" alt="{{ post.caption }}"  width="400" height="300">
+    <p>{{ post.caption }}</p>
+
+{% if request.user == post.user %}
+
+    <a href="{% url 'post_edit' pk=post.pk %}">Edit Post</a>
+    <a href="{% url 'post_delete' pk=post.pk %}">Delete Post</a>
+{% endif %}
+
+    <a href="{% url 'view_profile' request.user.pk %}">Back to Profile</a>
+
+{% endblock %}

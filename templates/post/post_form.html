@@ -1,0 +1,15 @@
+{% extends 'main.html' %}
+
+{% block content %}
+
+
+
+<h1>{% if form.instance.pk %}Edit{% else %}Create{% endif %} Post</h1>
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">{% if form.instance.pk %}Update{% else %}Create{% endif %} Post</button>
+</form>
+<a href="{% url 'view_profile' request.user.pk %}">Cancel</a>
+
+{% endblock %}

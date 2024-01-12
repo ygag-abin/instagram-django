@@ -1,0 +1,48 @@
+{% extends 'main.html' %}
+
+{% block content %}
+
+
+{% if profile.profile_pic %}
+<style>.rounded-image { border-radius: 50%; width: 150px; height: 150px;} </style>
+
+<img src="{{ profile.profile_pic.url}}" alt="{{ profile.user.username }}'s profile picture" class="rounded-image">
+{%endif%}
+
+<h1> {{ profile.user.username }} </h1>
+{% if profile %}
+<p>Bio: {{ profile.bio }}</p>
+<br/>
+{% if request.user == profile.user %}
+
+    <a href="{% url 'edit_profile' profile.pk %}" class="button-link">
+        <button type="button"> Edit Profile</button>
+    </a>
+
+    <a href="{% url 'post_create' %}" class="button-link">
+        <button type="button"> New Post</button>
+    </a>
+{% endif %}
+
+{% else %}
+
+<p>No profile found for this user.</p>
+{% endif %}
+
+    <h5>POSTS</h5>
+
+{% for user_post in post%}
+<div>
+    <br/>
+
+    <a href="{% url 'post_detail' pk=user_post.pk %}">
+        <img src="{{ user_post.image.url }}" alt="Post Image" width="400" height="300">
+    </a>
+        <p>{{user_post.caption}}</p>
+        <p>{{user_post.created_at}}</p>
+
+
+</div>
+{% endfor %}
+
+{% endblock %}
