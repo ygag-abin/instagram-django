@@ -12,37 +12,57 @@
 <h1> {{ profile.user.username }} </h1>
 {% if profile %}
 <p>Bio: {{ profile.bio }}</p>
-<br/>
+
+<p>Followers: {{ followers_count }} | Following: {{ following_count }}</p>
+
+<div class="follow">
+    {% if request.user != profile.user %}
+    {% if follow_exists %}
+    <form method="post" action="{% url 'follow_profile' pk=profile.pk %}">
+        {% csrf_token %}
+        <button type="submit" class="follow-btn followed">Unfollow</button>
+    </form>
+    {% else %}
+    <form method="post" action="{% url 'follow_profile' pk=profile.pk %}">
+        {% csrf_token %}
+        <button type="submit" class="follow-btn">Follow</button>
+    </form>
+    {% endif %}
+    {% endif %}
+</div>
+
 {% if request.user == profile.user %}
 
-    <a href="{% url 'edit_profile' profile.pk %}" class="button-link">
-        <button type="button"> Edit Profile</button>
-    </a>
+<a href="{% url 'edit_profile' profile.pk %}" class="button-link">
+    <button type="button"> Edit Profile</button>
+</a>
 
-    <a href="{% url 'post_create' %}" class="button-link">
-        <button type="button"> New Post</button>
-    </a>
+<a href="{% url 'post_create' %}" class="button-link">
+    <button type="button"> New Post</button>
+</a>
 {% endif %}
 
 {% else %}
-
-<p>No profile found for this user.</p>
+    <p>No profile found for this user.</p>
 {% endif %}
 
-    <h5>POSTS</h5>
+<p></p>
+<br/>
 
+<h5>POSTS</h5>
 {% for user_post in post%}
 <div>
-    <br/>
 
     <a href="{% url 'post_detail' pk=user_post.pk %}">
         <img src="{{ user_post.image.url }}" alt="Post Image" width="400" height="300">
     </a>
-        <p>{{user_post.caption}}</p>
-        <p>{{user_post.created_at}}</p>
+    <p>{{user_post.caption}}</p>
+    <p>{{user_post.created_at}}</p>
 
 
 </div>
+
+
 {% endfor %}
 
 {% endblock %}

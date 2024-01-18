@@ -9,6 +9,10 @@
     <p>{{ post.created_at }}</p>
     <img src="{{ post.image.url }}" alt="{{ post.caption }}"  width="400" height="300">
     <p>{{ post.caption }}</p>
+    {% for comment in comments %}
+    <p>{{comment.user}}</p>
+    <p>{{comment.text}}</p>
+    {% endfor %}
 
 {% if request.user == post.user %}
 

@@ -1,0 +1,25 @@
+{% extends 'main.html' %}
+
+{% block content %}
+<form class="d-flex" role="search" method="post" action="{%url 'all_users'%}">
+    {%csrf_token%}
+        <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" name="query">
+        <button class="btn btn-outline-success" type="submit">Search</button>
+      </form>
+<div class="container mt-5">
+        <h1>All Users</h1>
+        <div class="row">
+            {% for user in users %}
+                <div class="col-md-4 mb-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title"><a href="{% url 'view_profile' pk=user.pk %}">{{ user.name }}</a></h5>
+                            <p class="card-text"><a href="{% url 'view_profile' pk=user.pk %}">Bio:{{ user.bio }}</a></p>
+                        <img src="{{ user.profile_pic.url }}" class="card-img-top" alt="Profile Picture" style="width:100px; height:100px">
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}

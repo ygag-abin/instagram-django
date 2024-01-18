@@ -8,21 +8,53 @@
         <div>
 
 
-<!--            <h3><a href="{% url 'view_profile' post.user.pk %}">{{ post.user.username }}</a></h3>-->
             <div style="display: flex; align-items: center;">
-    <img src="{{ post.user.profile.profile_pic.url }}" alt="{{ profile.user.username }}'s profile picture" style="border-radius: 50%; width: 40px; height: 40px; margin-right: 10px;">
-    <h3><a href="{% url 'view_profile' post.user.pk %}">{{ post.user.username }}</a></h3>
-
-</div>
-<br/>
-            <img src="{{ post.image.url }}" alt="{{ post.caption }}" width="400" height="300">
-            <p>{{ post.caption }}</p>
-            <p>uploaded on: {{ post.created_at }}</p>
+            <img src="{{ post.user.profile.profile_pic.url }}" alt="{{ profile.user.username }}'s profile picture" style="border-radius: 50%; width: 40px; height: 40px; margin-right: 10px;">
+            <h3><a href="{% url 'view_profile' post.user.pk %}" style="text-decoration: none; color: black;">{{ post.user.username }}</a></h3>
 
         </div>
 <br/>
+            <img src="{{ post.image.url }}" alt="{{ post.caption }}" width="400" height="300">
+            <p>{{ post.caption }}</p>
 
+            <p>uploaded on: {{ post.created_at }}</p>
+
+         <div class="likes">
+        {% if post.like_set.all %}
+             <form method="post" action="{% url 'like_post' pk=post.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="like-btn liked" style="color:red; decorations:none;">♥️</button>
+        </form>
+      {% else %}
+        <form method="post" action="{% url 'like_post' pk=post.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="like-btn">🤍</button>
+        </form>
+      {% endif %}
+
+
+<span class="like-count">{{ post.like_set.count }} {% if post.like_set.count == 1 %}like{% else %}likes{% endif %}</span>
+    </div>
+  </div>
+
+<br/>
+
+{% for comment in post.comment_set.all %}
+    <p>{{comment.user}} : {{comment.text}}</p>
     {% endfor %}
+
+
+  <form method="post" action="{% url 'add_comment' post.id %}">
+    {% csrf_token %}
+    <label for="comment_text"></label>
+    <textarea id="comment_text" name="text" rows="3" cols="30" placeholder="Enter your comment here..."></textarea>
+    <br>
+    <button type="submit">Comment</button>
+  </form>
+<br/>
+<br/>
+    {% endfor %}
+
 
 {% endblock %}
 

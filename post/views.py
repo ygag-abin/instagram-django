@@ -1,4 +1,4 @@
-from .models import Post
+from .models import Post, Like, Comment
 from django.contrib.auth.decorators import login_required
 
 from django.shortcuts import render, get_object_or_404, redirect
@@ -17,7 +17,9 @@ def post_list(request):
 @login_required()
 def post_detail(request, pk):
     post = get_object_or_404(Post, pk=pk)
-    return render(request, 'post/post_detail.html', {'post': post})
+    comment = Comment.objects.filter(post=post)
+    return render(request, 'post/post_detail.html', {'post': post,
+                                                     'comments': comment})
 
 
 @login_required()
@@ -59,3 +61,32 @@ def post_delete(request, pk):
         return redirect('view_profile', pk=post.user.pk)
     context = {'object': post}
     return render(request, 'post/delete_template.html', context)
+
+
+@login_required
+def like_post(request, pk):
+    user = request.user
+    post = get_object_or_404(Post, pk=pk)
+
+    like_exists = Like.objects.filter(user=user, post=post).exists()
+
+    if like_exists:
+        Like.objects.filter(user=user, post=post).delete()
+    else:
+        Like.objects.create(user=user, post=post)
+
+    return redirect(request.META.get('HTTP_REFERER', 'post_list'))
+
+
+@login_required
+def add_comment(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
+    user = request.user
+
+    if request.method == 'POST':
+        text = request.POST.get('text')
+        if text:
+            Comment.objects.create(user=user, post=post, text=text)
+            return redirect('post-list')
+
+    return render(request, 'post/post-list.html', {'post': post})

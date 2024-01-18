@@ -12,17 +12,18 @@
                         <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="{% url 'post-list' %}">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if request.path == '/profile/' %}active{% endif %}" href="{% url 'view_profile' user.pk %}">Profile</a>
+                        <a class="nav-link {% if request.path == '/profile/' %}active{% endif %}" href="{% url 'view_profile' request.user.pk %}">Profile</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if request.path == 'features' %}active{% endif %}" href="#">Search</a>
+                        <a class="nav-link {% if request.path == '/profile/' %}active{% endif %}" href="{% url 'all_users' %}">Search</a>
                     </li>
+
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'logout' %}">Logout</a>
                     </li>
                 {% else %}
                     <li class="nav-item">
-                        <a class="nav-link {% if request.path == '/login/' %}active{% endif %}" href="">Sign up</a>
+                        <a class="nav-link {% if request.path == '/login/' %}active{% endif %}" href="{% url 'register' %}">Sign up</a>
                     </li>
 
                 {% endif %}
