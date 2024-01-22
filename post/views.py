@@ -5,12 +5,13 @@ from django.shortcuts import render, get_object_or_404, redirect
 from .forms import PostForm
 
 
-# Create your views here.
-
-
 @login_required()
 def post_list(request):
     posts = Post.objects.all().order_by('-created_at')
+
+    for post in posts:
+        like = Like.objects.filter(user=request.user, post=post).exists()
+        post.con = like
     return render(request, 'post/post_list.html', {'posts': posts})
 
 

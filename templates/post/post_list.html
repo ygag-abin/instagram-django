@@ -20,7 +20,7 @@
             <p>uploaded on: {{ post.created_at }}</p>
 
          <div class="likes">
-        {% if post.like_set.all %}
+        {% if post.con %}
              <form method="post" action="{% url 'like_post' pk=post.pk %}">
           {% csrf_token %}
           <button type="submit" class="like-btn liked" style="color:red; decorations:none;">♥️</button>
