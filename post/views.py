@@ -1,93 +1,101 @@
+from django.views.generic import ListView, DetailView, CreateView, UpdateView,\
+    DeleteView, View
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse_lazy
 from .models import Post, Like, Comment
-from django.contrib.auth.decorators import login_required
-
-from django.shortcuts import render, get_object_or_404, redirect
 from .forms import PostForm
 
 
-@login_required()
-def post_list(request):
-    posts = Post.objects.all().order_by('-created_at')
+class PostListView(LoginRequiredMixin, ListView):
+    model = Post
+    template_name = "post/post_list.html"
+    context_object_name = "posts"
+    ordering = ['-created_at']
 
-    for post in posts:
-        like = Like.objects.filter(user=request.user, post=post).exists()
-        post.con = like
-    return render(request, 'post/post_list.html', {'posts': posts})
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        return queryset
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
 
-@login_required()
-def post_detail(request, pk):
-    post = get_object_or_404(Post, pk=pk)
-    comment = Comment.objects.filter(post=post)
-    return render(request, 'post/post_detail.html', {'post': post,
-                                                     'comments': comment})
+        for post in context['posts']:
+            like = Like.objects.filter(user=user, post=post).exists()
+            post.con = like
 
-
-@login_required()
-def post_create(request):
-    if request.method == 'POST':
-        form = PostForm(request.POST, request.FILES)
-        if form.is_valid():
-            post = form.save(commit=False)
-            post.user = request.user
-            post.save()
-            return redirect('view_profile', pk=post.user.pk)
-    else:
-        form = PostForm()
-        post = request.user.post_set.first()
-
-    return render(request, 'post/post_form.html', {'form': form, 'post': post})
+        return context
 
 
-@login_required()
-def post_edit(request, pk):
-    post = get_object_or_404(Post, pk=pk)
-    if request.method == 'POST':
-        form = PostForm(request.POST, request.FILES, instance=post)
-        if form.is_valid():
-            post = form.save(commit=False)
-            post.user = request.user
-            post.save()
-            return redirect('post_detail', pk=post.pk)
-    else:
-        form = PostForm(instance=post)
-    return render(request, 'post/post_form.html', {'form': form})
+class PostDetailView(LoginRequiredMixin, DetailView):
+    model = Post
+    template_name = 'post/post_detail.html'
+    context_object_name = 'post'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['comments'] = Comment.objects.filter(post=self.object)
+        return context
 
 
-@login_required()
-def post_delete(request, pk):
-    post = get_object_or_404(Post, pk=pk)
-    if request.method == 'POST':
-        post.delete()
-        return redirect('view_profile', pk=post.user.pk)
-    context = {'object': post}
-    return render(request, 'post/delete_template.html', context)
+class PostCreateView(LoginRequiredMixin, CreateView):
+    model = Post
+    form_class = PostForm
+    template_name = 'post/post_form.html'
+
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse_lazy('view_profile', kwargs={'pk': self.object.user.pk})
 
 
-@login_required
-def like_post(request, pk):
-    user = request.user
-    post = get_object_or_404(Post, pk=pk)
+class PostEditView(LoginRequiredMixin, UpdateView):
+    model = Post
+    form_class = PostForm
+    template_name = 'post/post_form.html'
+    context_object_name = 'post'
 
-    like_exists = Like.objects.filter(user=user, post=post).exists()
-
-    if like_exists:
-        Like.objects.filter(user=user, post=post).delete()
-    else:
-        Like.objects.create(user=user, post=post)
-
-    return redirect(request.META.get('HTTP_REFERER', 'post_list'))
+    def get_success_url(self):
+        return reverse_lazy('post_detail', kwargs={'pk': self.object.pk})
 
 
-@login_required
-def add_comment(request, post_id):
-    post = get_object_or_404(Post, id=post_id)
-    user = request.user
+class PostDeleteView(LoginRequiredMixin, DeleteView):
+    model = Post
+    template_name = 'post/delete_template.html'
 
-    if request.method == 'POST':
+    def get_success_url(self):
+        return reverse_lazy('view_profile',
+                            kwargs={'pk': self.get_object().user.pk})
+
+
+class LikePostView(LoginRequiredMixin, View):
+    def post(self, request, pk):
+        user = request.user
+        post = get_object_or_404(Post, pk=pk)
+
+        like_exists = Like.objects.filter(user=user, post=post).exists()
+
+        if like_exists:
+            Like.objects.filter(user=user, post=post).delete()
+        else:
+            Like.objects.create(user=user, post=post)
+
+        return redirect(request.META.get('HTTP_REFERER', 'post_list'))
+
+
+class AddCommentView(LoginRequiredMixin, View):
+    template_name = 'post/post_list.html'
+
+    def post(self, request, post_id):
+        post = get_object_or_404(Post, id=post_id)
+        user = request.user
         text = request.POST.get('text')
+
         if text:
             Comment.objects.create(user=user, post=post, text=text)
             return redirect('post-list')
 
-    return render(request, 'post/post-list.html', {'post': post})
+        return render(request, self.template_name, {'post': post})

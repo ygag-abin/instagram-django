@@ -1,115 +1,98 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect
+from django.contrib.auth import login, logout
+from django.contrib.auth.views import LoginView, LogoutView
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.generic import CreateView, DetailView, UpdateView, \
+    TemplateView, ListView
+from django.urls import reverse_lazy
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.models import User
+from django.shortcuts import get_object_or_404
 from .models import Profile, Follow
 from .forms import ProfileForm
-from django.contrib.auth import login, logout
-from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
-from django.contrib.auth.models import User
 
 
-@login_required
-def create_profile(request):
-    if request.method == 'POST':
-        form = ProfileForm(request.POST, request.FILES)
-        if form.is_valid():
-            profile = form.save(commit=False)
-            profile.user = request.user
-            profile.save()
-            return redirect('view_profile')
-    else:
-        form = ProfileForm()
+class CreateProfileView(LoginRequiredMixin, CreateView):
+    model = Profile
+    form_class = ProfileForm
+    template_name = 'user/create_profile.html'
+    success_url = reverse_lazy('view_profile')
 
-    return render(request, 'user/create_profile.html', {'form': form})
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        return super().form_valid(form)
 
 
-@login_required
-def view_profile(request, pk):
-    profile = Profile.objects.get(pk=pk)
-    post = profile.user.post_set.all()
+class ViewProfileView(LoginRequiredMixin, DetailView):
+    model = Profile
+    template_name = 'user/profile_detail.html'
+    context_object_name = 'profile'
 
-    followers_count = Follow.objects.filter(following=profile.user).count()
-    following_count = Follow.objects.filter(follower=profile.user).count()
-
-    follow_exists = Follow.objects.filter(follower=request.user,
-                                          following=profile.user).exists()
-
-    return render(request, 'user/profile_detail.html', {'profile': profile,
-                                                        'post': post,
-                                                        'follow_exists':
-                                                            follow_exists,
-                                                        'followers_count': followers_count,
-                                                        'following_count': following_count,
-                                                        })
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['post'] = self.object.user.post_set.all()
+        context['followers_count'] = Follow.objects.filter(
+            following=self.object.user).count()
+        context['following_count'] = Follow.objects.filter(
+            follower=self.object.user).count()
+        context['follow_exists'] = Follow.objects.filter(
+            follower=self.request.user, following=self.object.user).exists()
+        return context
 
 
-@login_required
-def edit_profile(request, pk):
-    profile = Profile.objects.get(pk=pk)
+class EditProfileView(LoginRequiredMixin, UpdateView):
+    model = Profile
+    form_class = ProfileForm
+    template_name = 'user/edit_profile.html'
 
-    if request.method == 'POST':
-        form = ProfileForm(request.POST, request.FILES, instance=profile)
-        if form.is_valid():
-            form.save()
-            return redirect('view_profile', pk=profile.pk)
-    else:
-        form = ProfileForm(instance=profile)
-
-    return render(request, 'user/edit_profile.html', {'form': form,
-                                                      'profile': profile})
+    def get_success_url(self):
+        return reverse_lazy('view_profile', kwargs={'pk': self.object.pk})
 
 
-def login_view(request):
-    if request.method == 'POST':
-        form = AuthenticationForm(request, request.POST)
-        if form.is_valid():
-            login(request, form.get_user())
-            return redirect('post-list')
-
-    else:
-        form = AuthenticationForm()
-    return render(request, 'user/login.html', {'form': form})
+# class LoginUserView(LoginView):
+#     template_name = 'user/login.html'
+#
+#
+# class LogoutUserView(LogoutView):
+#     next_page = 'login'
 
 
-def logout_view(request):
-    logout(request)
-    return redirect('login')
+class RegisterUserView(CreateView):
+    template_name = 'user/register.html'
+    form_class = UserCreationForm
+    success_url = reverse_lazy('post-list')
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        login(self.request, self.object)
+        return response
 
 
-def register(request):
-    if request.method == 'POST':
-        form = UserCreationForm(request.POST)
-        if form.is_valid():
-            user = form.save()
-            login(request, user)
-            return redirect('post-list')
-    else:
-        form = UserCreationForm()
+class AllUsersView(LoginRequiredMixin, ListView):
+    model = Profile
+    template_name = 'user/all_users.html'
+    context_object_name = 'users'
 
-    return render(request, 'user/register.html', {'form': form})
+    def post(self, request, *args, **kwargs):
+        data = self.request.POST.get("query")
+        self.object_list = self.model.objects.filter(name__icontains=data)
+        return self.render_to_response(self.get_context_data())
 
 
-def all_users(request):
-    user = Profile.objects.all()
-    if request.method == "POST":
-        data = request.POST.get("query")
-        user = Profile.objects.filter(name__icontains=data)
-        print(user)
+class FollowProfileView(LoginRequiredMixin, TemplateView):
+    template_name = 'user/profile_detail.html'
 
-    return render(request, 'user/all_users.html', {'users': user})
+    def post(self, request, *args, **kwargs):
+        user = self.request.user
+        following_user = get_object_or_404(User, pk=self.kwargs['pk'])
+        follow_exists = Follow.objects.filter(follower=user,
+                                              following=following_user).exists()
 
+        if follow_exists:
+            Follow.objects.filter(follower=user,
+                                  following=following_user).delete()
+        else:
+            Follow.objects.create(follower=user, following=following_user)
 
-@login_required
-def follow_profile(request, pk):
-    user = request.user
-    following_user = get_object_or_404(User, pk=pk)
-    follow_exists = Follow.objects.filter(follower=user,
-                                          following=following_user).exists()
-
-    if follow_exists:
-        Follow.objects.filter(follower=user, following=following_user).delete()
-        follow_exists = False
-    else:
-        Follow.objects.create(follower=user, following=following_user)
-        follow_exists = True
-
-    return redirect(request.META.get('HTTP_REFERER', 'profile_detail'))
+        return redirect(
+            self.request.META.get('HTTP_REFERER', 'profile_detail'))
