@@ -1,5 +1,4 @@
-post/__pycache__/
-user/__pycache__/
+*.pyc
 
 .DS_Store
 .idea/
