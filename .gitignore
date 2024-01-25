@@ -1,7 +1,7 @@
 *.pyc
 *__pycache__
-__pycache__/
-/__pycache__
+user/__pycache__/
+post/__pycache__/
 .DS_Store
 .idea/
 data/
