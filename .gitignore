@@ -1,13 +1,6 @@
-<<<<<<< HEAD
-*.pyc
-*__pycache__
-user/__pycache__/
-post/__pycache__/
-=======
 __pycache__
 *.pyc
 
->>>>>>> main
 .DS_Store
 .idea/
 data/
