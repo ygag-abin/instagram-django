@@ -1,0 +1,7 @@
+post/__pycache__/
+user/__pycache__/
+
+.DS_Store
+.idea/
+data/
+db.sqlite3
