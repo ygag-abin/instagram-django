@@ -1,6 +1,5 @@
-from django.shortcuts import render, redirect
-from django.contrib.auth import login, logout
-from django.contrib.auth.views import LoginView, LogoutView
+from django.shortcuts import redirect
+from django.contrib.auth import login
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import CreateView, DetailView, UpdateView, \
     TemplateView, ListView
@@ -47,14 +46,6 @@ class EditProfileView(LoginRequiredMixin, UpdateView):
 
     def get_success_url(self):
         return reverse_lazy('view_profile', kwargs={'pk': self.object.pk})
-
-
-# class LoginUserView(LoginView):
-#     template_name = 'user/login.html'
-#
-#
-# class LogoutUserView(LogoutView):
-#     next_page = 'login'
 
 
 class RegisterUserView(CreateView):
