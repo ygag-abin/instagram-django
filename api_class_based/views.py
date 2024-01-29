@@ -1,14 +1,9 @@
-from rest_framework.generics import get_object_or_404, ListCreateAPIView, \
-    RetrieveUpdateDestroyAPIView
+from rest_framework import viewsets
+from rest_framework.response import Response
 from post.models import Post
 from .serializers import PostSerializer
 
 
-class PostListView(ListCreateAPIView):
-    queryset = Post.objects.all()
-    serializer_class = PostSerializer
-
-
-class PostDetailView(RetrieveUpdateDestroyAPIView):
+class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.all()
     serializer_class = PostSerializer

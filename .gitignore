@@ -5,3 +5,6 @@ __pycache__
 .idea/
 data/
 db.sqlite3
+
+
+/static
