@@ -1,4 +1,4 @@
-from rest_framework.generics import get_object_or_404, ListCreateAPIView, \
+from rest_framework.generics import ListCreateAPIView, \
     RetrieveUpdateDestroyAPIView
 from post.models import Post
 from .serializers import PostSerializer
