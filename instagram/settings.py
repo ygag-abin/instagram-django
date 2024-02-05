@@ -37,7 +37,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'user',
-    'post'
+    'post',
+    'graphene_django',
+    'graphql_jwt.refresh_token.apps.RefreshTokenConfig',
+
 ]
 
 MIDDLEWARE = [
@@ -48,6 +51,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
 ]
 
 ROOT_URLCONF = 'instagram.urls'
@@ -140,3 +144,15 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'post_list'
+
+
+
+# import datetime
+#
+# JWT_AUTH = {
+#     'JWT_ALLOW_REFRESH': True,
+#     'JWT_EXPIRATION_DELTA': datetime.timedelta(seconds=3600),
+#     'JWT_REFRESH_EXPIRATION_DELTA': datetime.timedelta(days=7),
+#     'JWT_ALGORITHM': 'HS256',
+#     'JWT_PAYLOAD_HANDLER': 'your_project.utils.jwt_payload_handler',
+# }
