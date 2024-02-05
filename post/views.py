@@ -1,4 +1,4 @@
-from django.views.generic import ListView, DetailView, CreateView, UpdateView,\
+from django.views.generic import ListView, DetailView, CreateView, UpdateView, \
     DeleteView, View
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render, redirect, get_object_or_404
@@ -99,3 +99,12 @@ class AddCommentView(LoginRequiredMixin, View):
             return redirect('post-list')
 
         return render(request, self.template_name, {'post': post})
+
+
+# views.py
+
+from graphene_django.views import GraphQLView
+
+
+class JWTGraphQLView(GraphQLView):
+    pass
